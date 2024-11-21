@@ -58,10 +58,10 @@ def process_conf_data(data):
         if not is_ip_address(address):
             resolved_ip = resolve_dns_to_ip(address)
             if resolved_ip:
-                print(f"Resolved DNS '{address}' to IP '{resolved_ip}'")
+                print(f"Resolved DNS '{address}' to IP '{resolved_ip}'", file=sys.stderr)
                 return f"{prefix}{resolved_ip}:{port}{suffix}"
             else:
-                print(f"Error: Could not resolve DNS name '{address}'")
+                print(f"Error: Could not resolve DNS name '{address}'", file=sys.stderr)
                 sys.exit(1)
         else:
             return full_line
