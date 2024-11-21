@@ -5,6 +5,7 @@ import base64
 import argparse
 import socket
 import ipaddress
+import re
 
 def qCompress(data, level=-1):
     compressed = zlib.compress(data, level)
@@ -48,30 +49,24 @@ def resolve_dns_to_ip(dns_name):
         return None
 
 def process_conf_data(data):
-    lines = data.splitlines()
-    new_lines = []
-    for line in lines:
-        stripped_line = line.strip()
-        if stripped_line.startswith('Endpoint'):
-            key, value = stripped_line.split('=', 1)
-            value = value.strip()
-            if ':' in value:
-                address, port = value.split(':', 1)
-                address = address.strip()
-                port = port.strip()
-                if not is_ip_address(address):
-                    resolved_ip = resolve_dns_to_ip(address)
-                    if resolved_ip:
-                        print(f"Resolved DNS '{address}' to IP '{resolved_ip}'")
-                        line = f"{key} = {resolved_ip}:{port}"
-                    else:
-                        print(f"Error: Could not resolve DNS name '{address}'")
-                        sys.exit(1)
+    def replace_endpoint(match):
+        full_line = match.group(0)
+        prefix = match.group(1)
+        address = match.group(2)
+        port = match.group(3)
+        suffix = match.group(4)
+        if not is_ip_address(address):
+            resolved_ip = resolve_dns_to_ip(address)
+            if resolved_ip:
+                print(f"Resolved DNS '{address}' to IP '{resolved_ip}'")
+                return f"{prefix}{resolved_ip}:{port}{suffix}"
             else:
-                print(f"Error: Invalid Endpoint format '{value}'")
+                print(f"Error: Could not resolve DNS name '{address}'")
                 sys.exit(1)
-        new_lines.append(line)
-    return '\n'.join(new_lines)
+        else:
+            return full_line
+    pattern = r'^(.*Endpoint\s*=\s*)([^\s:]+)(?::(\d+))(.*)$'
+    return re.sub(pattern, replace_endpoint, data, flags=re.MULTILINE)
 
 def encode(data):
     data_bytes = data.encode('utf-8')
