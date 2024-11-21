@@ -3,6 +3,8 @@ import struct
 import zlib
 import base64
 import argparse
+import socket
+import ipaddress
 
 def qCompress(data, level=-1):
     compressed = zlib.compress(data, level)
@@ -30,6 +32,46 @@ def base64url_decode(data):
     padding_needed = (4 - len(data) % 4) % 4
     data += b'=' * padding_needed
     return base64.urlsafe_b64decode(data)
+
+def is_ip_address(address):
+    try:
+        ipaddress.ip_address(address)
+        return True
+    except ValueError:
+        return False
+
+def resolve_dns_to_ip(dns_name):
+    try:
+        ip_address = socket.gethostbyname(dns_name)
+        return ip_address
+    except socket.gaierror:
+        return None
+
+def process_conf_data(data):
+    lines = data.splitlines()
+    new_lines = []
+    for line in lines:
+        stripped_line = line.strip()
+        if stripped_line.startswith('Endpoint'):
+            key, value = stripped_line.split('=', 1)
+            value = value.strip()
+            if ':' in value:
+                address, port = value.split(':', 1)
+                address = address.strip()
+                port = port.strip()
+                if not is_ip_address(address):
+                    resolved_ip = resolve_dns_to_ip(address)
+                    if resolved_ip:
+                        print(f"Resolved DNS '{address}' to IP '{resolved_ip}'")
+                        line = f"{key} = {resolved_ip}:{port}"
+                    else:
+                        print(f"Error: Could not resolve DNS name '{address}'")
+                        sys.exit(1)
+            else:
+                print(f"Error: Invalid Endpoint format '{value}'")
+                sys.exit(1)
+        new_lines.append(line)
+    return '\n'.join(new_lines)
 
 def encode(data):
     data_bytes = data.encode('utf-8')
@@ -70,7 +112,9 @@ def main():
             print(f'Error reading file {args.input}: {e}')
             sys.exit(1)
 
-        encoded_string = encode(data)
+        processed_data = process_conf_data(data)
+
+        encoded_string = encode(processed_data)
 
         if args.output:
             try:
