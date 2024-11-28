@@ -63,6 +63,12 @@
 
 ## Поддержка
 
+Поддержать разработчика можете следующими способами:
+- [Boosty](https://boosty.to/jb-selfcompany/donate)
+- LTC `ltc1qsa49jtpxau9f28fej7vpzj99lstx44792k4ack`
+- XMR `43ojbNWXSNCWjXAk1RbTvidACZKrWSpV7hXRosn9UQJhWEHHkzCB4g8Hh5sHhSzU7gBpwWkMFhgwuPLLuox6GqEQN7CLgHp`
+- BTC `bc1qt75kx0lwsw2npfh06kfq37gf97eper00sxp3tf` 
+
 Если у вас возникли вопросы или проблемы с установкой и использованием, создайте [issue](https://github.com/JB-SelfCompany/awg-decoder/issues) в этом репозитории или обратитесь к разработчику.
 
 - [Matrix](https://matrix.to/#/@jack_benq:shd.company)
